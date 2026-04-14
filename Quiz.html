@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Multi Course Quiz System</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 20px; }
+    input, select { padding: 8px; width: 80%; margin: 5px; }
+    button { padding: 10px; margin: 5px; cursor: pointer; }
+  </style>
+</head>
+
+<body>
+
+<div id="registerBox">
+  <h2>Student Registration 🧾</h2>
+
+  <input id="fullName" placeholder="Full Name"><br>
+  <input id="regNo" placeholder="Registration Number"><br>
+  <input id="combination" placeholder="Combination"><br>
+  <input id="phone" placeholder="Telephone"><br>
+
+  <select id="course">
+    <option value="">-- Select Course --</option>
+    <option value="dbms">DBMS</option>
+    <option value="network">Computer Network</option>
+    <option value="physics">Physics for Computer Science</option>
+    <option value="entrepreneurship">Entrepreneurship</option>
+    <option value="english">English</option>
+  </select><br><br>
+
+  <button onclick="startQuiz()">Start Quiz</button>
+</div>
+
+<div id="quizBox" style="display:none;">
+  <h3 id="timer">Time Left: 15:00</h3>
+  <h2 id="question"></h2>
+  <div id="answers"></div>
+  <p id="result"></p>
+  <button onclick="nextQuestion()">Next</button>
+</div>
+
+<div id="finalBox" style="display:none;">
+  <h2>Quiz Finished 🎉</h2>
+  <p id="finalResult"></p>
+  <pre id="studentInfo"></pre>
+  <div id="review"></div
