@@ -1,46 +1,406 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Multi Course Quiz System</title>
-  <style>
-    body { font-family: Arial; text-align: center; padding: 20px; }
-    input, select { padding: 8px; width: 80%; margin: 5px; }
-    button { padding: 10px; margin: 5px; cursor: pointer; }
-  </style>
+<meta charset="UTF-8">
+<title>CSE Quiz System</title>
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  text-align: center;
+  background: linear-gradient(-45deg,#1e3c72,#2a5298,#00c6ff,#0072ff);
+  background-size: 400% 400%;
+  animation: bg 10s infinite;
+}
+
+@keyframes bg {
+  0%{background-position:0%}
+  50%{background-position:100%}
+  100%{background-position:0%}
+}
+
+.quiz-container {
+  background: rgba(255,255,255,0.95);
+  width: 520px;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 15px;
+}
+
+.btn {
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  background:#0072ff;
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+input, select {
+  width:95%;
+  padding:10px;
+  margin:6px 0;
+}
+
+#timer { color:red; font-weight:bold; }
+</style>
 </head>
 
 <body>
 
-<div id="registerBox">
-  <h2>Student Registration 🧾</h2>
+<div class="quiz-container">
 
-  <input id="fullName" placeholder="Full Name"><br>
-  <input id="regNo" placeholder="Registration Number"><br>
-  <input id="combination" placeholder="Combination"><br>
-  <input id="phone" placeholder="Telephone"><br>
+<!-- REGISTER -->
+<div id="register">
+<h2>Select your name please</h2>
 
-  <select id="course">
-    <option value="">-- Select Course --</option>
-    <option value="dbms">DBMS</option>
-    <option value="network">Computer Network</option>
-    <option value="physics">Physics for Computer Science</option>
-    <option value="entrepreneurship">Entrepreneurship</option>
-    <option value="english">English</option>
-  </select><br><br>
+<input type="text" id="search" placeholder="Search student..." onkeyup="filterStudents()">
 
-  <button onclick="startQuiz()">Start Quiz</button>
+<select id="studentSelect" size="8"></select>
+
+<p id="showReg"></p>
+
+<input id="combo" placeholder="Enter Combination (CSE only)">
+
+<p>Select Subject</p>
+<select id="subject">
+<option value="">-- Select Subject --</option>
+<option value="db">Database</option>
+<option value="phy">Physics</option>
+<option value="ent">Entrepreneurship</option>
+<option value="eng">English</option>
+<option value="net">Computer Network</option>
+</select>
+
+<button class="btn" onclick="startQuiz()">Start Quiz</button>
 </div>
 
+<!-- QUIZ -->
 <div id="quizBox" style="display:none;">
-  <h3 id="timer">Time Left: 15:00</h3>
-  <h2 id="question"></h2>
-  <div id="answers"></div>
-  <p id="result"></p>
-  <button onclick="nextQuestion()">Next</button>
+<div id="studentInfo"></div>
+<div id="timer">Time: 15</div>
+
+<h2 id="question"></h2>
+
+<button class="btn" onclick="check(0)" id="o0"></button>
+<button class="btn" onclick="check(1)" id="o1"></button>
+<button class="btn" onclick="check(2)" id="o2"></button>
+<button class="btn" onclick="check(3)" id="o3"></button>
+
+<p>Prepared by call 🤙 Amos</p>
 </div>
 
-<div id="finalBox" style="display:none;">
-  <h2>Quiz Finished 🎉</h2>
-  <p id="finalResult"></p>
-  <pre id="studentInfo"></pre>
-  <div id="review"></div
+</div>
+
+<script>
+
+/* ================= STUDENTS ================= */
+let students = [
+{reg:"224003892", name:"INGABIRE SIFA"},
+{reg:"225028235", name:"HARERIMANA JEAN BOSCO"},
+{reg:"225030509", name:"NTAKIRUTIMANA DIDIER"},
+{reg:"225030583", name:"MUTAYISEBYA LAETITIA"},
+{reg:"225030730", name:"CYUZUZO PATRICK"},
+{reg:"225031426", name:"KWIZERA DANIEL"},
+{reg:"225031648", name:"TWIZERIMANA FRANCOISE"},
+{reg:"225031774", name:"IYAMUHANZE FABRICE"},
+{reg:"225031797", name:"NIRINGIYUMUKIZA ERIC"},
+{reg:"225031806", name:"MANIRIHO JEAN BAPTISTE"},
+{reg:"225032187", name:"MWISENEZA NEPOMUSCENE"},
+{reg:"225032333", name:"GASHEMA PASCAL"},
+{reg:"225032506", name:"NISHIMWE SIMPLICE"},
+{reg:"225033031", name:"IRADUKUNDA THEOPISTE"},
+{reg:"225034228", name:"UWAYISABA AGNES"},
+{reg:"225034471", name:"MUKARUKUNDO PHILOMENE"},
+{reg:"225035065", name:"MUSHIMIYIMANA PATRICK"},
+{reg:"225035551", name:"NDAYISENGA PATRICK"},
+{reg:"225035571", name:"MUHIRE JANVIER"},
+{reg:"225036066", name:"TUYIRAMYE ANCILE"},
+{reg:"225036654", name:"BURINDWI THEOGENE"},
+{reg:"225037737", name:"UWIKUNDA LUCIE"},
+{reg:"225038012", name:"NIYOMUGABO EMMANUEL"},
+{reg:"225038015", name:"NIYOBUHUNGIRO AMOS"},
+{reg:"225038335", name:"IRASUBIZA VODINE"},
+{reg:"225038540", name:"NIYOMUGABO ANDRE"},
+{reg:"225039404", name:"HAKIZIMANA JEAN BONCOEUR"},
+{reg:"225039679", name:"NIYONDAMYA ERASTE"},
+{reg:"225040013", name:"BIKORIMANA DAMASCENE"},
+{reg:"225040706", name:"HABINSHUTI EZECHIEL"},
+{reg:"225041692", name:"TUYIZERE BONAVENTURE"},
+{reg:"225041968", name:"NDAGIJIMANA EUGENE"},
+{reg:"225042118", name:"ISHIMWE RODRIGUE"},
+{reg:"225042128", name:"HITIMANA EMMANUEL"},
+{reg:"225042275", name:"NIYOMUGABO ERIC"},
+{reg:"225043408", name:"TWIZERIMANA YAKINI"},
+{reg:"225044328", name:"MUJAWAMARIYA MARITHA"},
+{reg:"225045066", name:"NIWEMAHORO PROVIDENCE"},
+{reg:"225052472", name:"BIMENYIMANA BENJAMIN"},
+{reg:"225055615", name:"MUGISHA OBED"},
+{reg:"225056155", name:"MUNGUYIKO MILLIERE"},
+{reg:"225057744", name:"NGIRINSHUTI JOYCE"},
+{reg:"225058399", name:"NIYITEGEKA ADELINE"},
+{reg:"225058627", name:"MUHOZI JULIA"},
+{reg:"225058665", name:"NIYONSENGA REGIS"},
+{reg:"225058711", name:"UMUHIRE VALENTINE"},
+{reg:"225059294", name:"NKURUNZIZA JEAN CLAUDE"},
+{reg:"225060571", name:"MUNYABUGINGO PACIFIQUE"},
+{reg:"225060679", name:"INGABIRE SOLANGE"},
+{reg:"225060937", name:"NGENERWANAYEZU ONESME"},
+{reg:"225061542", name:"NIYIBIKORA CLARISSE"},
+{reg:"225061793", name:"NIYOMUKIZA SYLVIE"},
+{reg:"225062589", name:"UWASE JOSIANE"},
+{reg:"225063125", name:"NDAYIZEYE SAMUEL"},
+{reg:"225063339", name:"NGIRUMUKIZA ERIC"},
+{reg:"225063683", name:"IGABE BONHEUR"},
+{reg:"225064960", name:"YUMVAGUSENGA ESTHER"},
+{reg:"225065485", name:"NIYIGABA EVODE"},
+{reg:"225065795", name:"UWIRAGIYE CONSOLEE"},
+{reg:"225065977", name:"NDUWAMUNGU ELIE"},
+{reg:"225066185", name:"NDIKURYAYO BERNARD"},
+{reg:"225067188", name:"NDAGIJIMANA DONAT"},
+{reg:"225067467", name:"NSHIMYIMANA EMMANUEL"},
+{reg:"225067685", name:"TUYIZERE ERIC"},
+{reg:"225068322", name:"HATUNGURAMYE MATHIAS"},
+{reg:"225068548", name:"BAVUGANSENGA ISRAEL"},
+{reg:"225068703", name:"NIYODUSENGA ELIZABETH"},
+{reg:"225069468", name:"NIKUZWE VANICE"},
+{reg:"225069802", name:"NIKUZE AGNES"},
+{reg:"225070476", name:"DUSABIMANA JEAN CLAUDE"},
+{reg:"225070658", name:"NIYONSHUTI THEONESTE"},
+{reg:"225072552", name:"NDABIKUNZE ALLI"},
+{reg:"225073831", name:"NIYONKURU VINCENT"},
+{reg:"225074342", name:"NIYONSABA EMELINE"},
+{reg:"225077235", name:"MUYIZERE DENYSE"},
+{reg:"225078533", name:"IRADUKUNDA RACHEL"},
+{reg:"225079342", name:"IHIRWE DINA"},
+{reg:"225080808", name:"IMANANIYIGENA BRIGITTE"},
+{reg:"225081654", name:"HATEGEKIMANA GAD"},
+{reg:"225081930", name:"KWIZERA DIVINE"},
+{reg:"225081998", name:"UTUJE ALICE"},
+{reg:"225083302", name:"MANIRAKIZA GERMAIN"},
+{reg:"225083757", name:"NIYIGENA PATRICK"}
+];
+
+students.sort((a,b)=>a.name.localeCompare(b.name));
+
+let select=document.getElementById("studentSelect");
+
+function renderStudents(list=students){
+select.innerHTML="";
+list.forEach(s=>{
+let opt=document.createElement("option");
+opt.value=s.reg;
+opt.text=s.name;
+select.add(opt);
+});
+}
+renderStudents();
+
+/* SEARCH */
+function filterStudents(){
+let v=document.getElementById("search").value.toLowerCase();
+renderStudents(students.filter(s=>s.name.toLowerCase().includes(v)));
+}
+
+/* SHOW REG */
+select.onchange=()=>{
+let s=students.find(x=>x.reg==select.value);
+document.getElementById("showReg").innerText=
+s?"Reg No: "+s.reg:"";
+};
+
+/* COMBO */
+function validateCombo(){
+let c=document.getElementById("combo").value.trim().toUpperCase();
+while(c!=="CSE"){
+c=prompt("Invalid combination! Enter CSE:");
+}
+return c;
+}
+
+/* QUESTIONS */
+const data={
+db:[
+{q:"DBMS?",o:["Software","Hardware","Game","OS"],a:0},
+{q:"Primary key?",o:["Unique","Delete","Speed","Design"],a:0},
+{q:"SQL?",o:["Language","Game","OS","App"],a:0},
+{q:"Normalization?",o:["Reduce redundancy","Increase","Delete","Encrypt"],a:0},
+{q:"Foreign key?",o:["Link tables","Delete","Game","App"],a:0},
+{q:"SELECT?",o:["Retrieve","Delete","Install","Play"],a:0},
+{q:"Record?",o:["Row","Column","File","System"],a:0},
+{q:"Index?",o:["Faster search","Slow","Delete","Game"],a:0},
+{q:"Table?",o:["Data set","App","Device","Game"],a:0},
+{q:"ACID?",o:["DB rules","Network","CPU","OS"],a:0}
+],
+
+phy:[
+{q:"Force?",o:["Push pull","Light","Heat","Sound"],a:0},
+{q:"Speed?",o:["Distance/time","Mass","Heat","Sound"],a:0},
+{q:"Energy?",o:["Work ability","Matter","Light","Sound"],a:0},
+{q:"Gravity?",o:["Attraction","Push","Heat","Sound"],a:0},
+{q:"Work?",o:["F×D","S×T","M×V","Power"],a:0},
+{q:"Mass?",o:["Matter amount","Speed","Heat","Light"],a:0},
+{q:"Acceleration?",o:["Velocity change","Distance","Time","Mass"],a:0},
+{q:"Momentum?",o:["mv","ft","ds","power"],a:0},
+{q:"Voltage?",o:["Volt","Newton","Joule","Watt"],a:0},
+{q:"Current?",o:["Charge flow","Water","Air","Heat"],a:0}
+],
+
+eng:[
+{q:"Verb?",o:["Action","Name","Place","Thing"],a:0},
+{q:"Go past?",o:["Went","Gone","Going","Go"],a:0},
+{q:"Article?",o:["a an the","he she","run","blue"],a:0},
+{q:"Tense?",o:["Time","Place","Thing","Color"],a:0},
+{q:"Adjective?",o:["Describe noun","Action","Place","Thing"],a:0},
+{q:"Pronoun?",o:["He","Run","Blue","Table"],a:0},
+{q:"Synonym?",o:["Same meaning","Opposite","Sound","Color"],a:0},
+{q:"Antonym?",o:["Opposite","Same","Verb","Noun"],a:0},
+{q:"Passive?",o:["Object receives","Subject acts","Question","None"],a:0},
+{q:"Voice?",o:["Active/passive","Sound","Color","Light"],a:0}
+],
+
+ent:[
+{q:"Entrepreneur?",o:["Creator","Student","Teacher","Doctor"],a:0},
+{q:"Innovation?",o:["New idea","Copy","Delete","Stop"],a:0},
+{q:"Market?",o:["Buy/sell","School","Home","Hospital"],a:0},
+{q:"Profit?",o:["Revenue-cost","Cost-revenue","Tax","Loss"],a:0},
+{q:"Risk?",o:["Uncertainty","Safe","Fixed","Sure"],a:0},
+{q:"Capital?",o:["Start money","Debt","Loss","Tax"],a:0},
+{q:"Marketing?",o:["Promotion","Sleep","Eat","Code"],a:0},
+{q:"Customer?",o:["Buyer","Seller","Teacher","Doctor"],a:0},
+{q:"Economy?",o:["Production system","Game","Phone","Book"],a:0},
+{q:"Plan?",o:["Roadmap","Game","App","Code"],a:0}
+],
+
+net:[
+{q:"LAN?",o:["Local network","Large","Long","Line"],a:0},
+{q:"Router?",o:["Traffic director","Printer","Game","Screen"],a:0},
+{q:"IP?",o:["Device ID","Password","Game","File"],a:0},
+{q:"OSI?",o:["7 layers","3","5","2"],a:0},
+{q:"Switch?",o:["Data link","Physical","App","Game"],a:0},
+{q:"Packet?",o:["Data unit","Virus","Game","File"],a:0},
+{q:"Bandwidth?",o:["Capacity","Car speed","CPU","RAM"],a:0},
+{q:"WAN?",o:["Wide network","Small","Game","Phone"],a:0},
+{q:"Protocol?",o:["Rules","Game","App","CPU"],a:0},
+{q:"TCP/IP?",o:["Protocol suite","Game","App","OS"],a:0}
+]
+};
+
+let quiz=[],i=0,score=0,time=15,timer;
+let currentStudent={}, currentSubject="";
+
+/* START */
+function startQuiz(){
+let reg=select.value;
+let combo=validateCombo();
+let subject=document.getElementById("subject").value;
+
+if(!reg||!subject){
+alert("Select student and subject");
+return;
+}
+
+quiz=data[subject];
+
+currentStudent=students.find(x=>x.reg==reg);
+currentSubject=subject;
+
+document.getElementById("register").style.display="none";
+document.getElementById("quizBox").style.display="block";
+
+document.getElementById("studentInfo").innerHTML=
+`Name: ${currentStudent.name}<br>Reg: ${currentStudent.reg}<br>Subject: ${subject}`;
+
+load();
+}
+
+/* TIMER */
+function startTimer(){
+time=15;
+document.getElementById("timer").innerText="Time: "+time;
+timer=setInterval(()=>{
+time--;
+document.getElementById("timer").innerText="Time: "+time;
+if(time==0){clearInterval(timer);i++;next();}
+},1000);
+}
+
+/* LOAD */
+function load(){
+clearInterval(timer);
+let q=quiz[i];
+document.getElementById("question").innerText=q.q;
+
+for(let j=0;j<4;j++){
+document.getElementById("o"+j).innerText=q.o[j];
+}
+
+startTimer();
+}
+
+/* CHECK */
+function check(ans){
+clearInterval(timer);
+if(ans===quiz[i].a)score++;
+i++;
+next();
+}
+
+/* FINAL RESULT */
+function next(){
+if(i<quiz.length){
+load();
+}else{
+
+let message="";
+let color="";
+
+if(score>=5){
+message="🎉 Congratulations! You passed 🎉";
+color="green";
+}else{
+message="❌ Fail try again ncuti yange";
+color="red";
+}
+
+document.getElementById("quizBox").innerHTML=`
+<div id="certificate" style="border:5px solid ${color}; padding:20px; border-radius:15px; background:white;">
+<h2>🏆 CERTIFICATE 🏆</h2>
+<hr>
+
+<h3>This certifies that</h3>
+<h2>${currentStudent.name}</h2>
+
+<p><b>Reg:</b> ${currentStudent.reg}</p>
+<p><b>Subject:</b> ${currentSubject}</p>
+<p><b>Score:</b> ${score}/${quiz.length}</p>
+
+<h3 style="color:${color}">${message}</h3>
+
+<hr>
+<p><b>Certified by:</b> call 🤙 Amos</p>
+</div>
+
+<button class="btn" onclick="downloadCertificate()">Download Certificate</button>
+`;
+}
+}
+
+/* DOWNLOAD */
+function downloadCertificate(){
+html2canvas(document.getElementById("certificate")).then(canvas=>{
+let a=document.createElement("a");
+a.download=currentStudent.name+"_certificate.png";
+a.href=canvas.toDataURL("image/png");
+a.click();
+});
+}
+</script>
+
+</body>
+  </html>
