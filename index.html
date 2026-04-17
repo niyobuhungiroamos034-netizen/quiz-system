@@ -4,80 +4,479 @@
 <meta charset="UTF-8">
 <title>CSE Quiz System</title>
 
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
 <style>
-body {
-  font-family: Arial;
-  margin: 0;
-  text-align: center;
-  background: linear-gradient(-45deg,#1e3c72,#2a5298,#00c6ff,#0072ff);
-  background-size: 400% 400%;
-  animation: bg 10s infinite;
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(-45deg,#1e3c72,#2a5298,#00c6ff,#0072ff);
+background-size:400% 400%;
+animation:bg 10s infinite;
 }
 
-@keyframes bg {
-  0%{background-position:0%}
-  50%{background-position:100%}
-  100%{background-position:0%}
+@keyframes bg{
+0%{background-position:0%}
+50%{background-position:100%}
+100%{background-position:0%}
 }
 
-.quiz-container {
-  background: rgba(255,255,255,0.95);
-  width: 520px;
-  margin: 20px auto;
-  padding: 20px;
-  border-radius: 15px;
+.container{
+width:100%;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+flex-direction:column;
 }
 
-.btn {
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  background:#0072ff;
-  color:white;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
+.box{
+background:white;
+width:90%;
+max-width:600px;
+padding:20px;
+border-radius:15px;
+margin:10px;
 }
 
-input, select {
-  width:95%;
-  padding:10px;
-  margin:6px 0;
+input,select{
+width:95%;
+padding:10px;
+margin:5px 0;
 }
 
-#timer { color:red; font-weight:bold; }
+.btn{
+width:100%;
+padding:12px;
+margin:5px 0;
+background:#0072ff;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+.btn:hover{background:#005ecb;}
+
+#timer{color:red;font-weight:bold;font-size:18px;}
 </style>
 </head>
 
 <body>
 
-<div class="quiz-container">
+<div class="container">
 
-<!-- REGISTER -->
-<div id="register">
+<!-- STUDENT SECTION -->
+<div class="box" id="studentBox">
 <h2>Select your name please</h2>
 
-<input type="text" id="search" placeholder="Search student..." onkeyup="filterStudents()">
+<input id="search" placeholder="Search student..." onkeyup="filterStudents()">
 
-<select id="studentSelect" size="8"></select>
+<select id="studentSelect" size="6"></select>
 
-<p id="showReg"></p>
+<p id="regDisplay"></p>
 
 <input id="combo" placeholder="Enter Combination (CSE only)">
 
 <p>Select Subject</p>
 <select id="subject">
-<option value="">-- Select Subject --</option>
+<option value="">Select</option>
 <option value="db">Database</option>
 <option value="phy">Physics</option>
-<option value="ent">Entrepreneurship</option>
 <option value="eng">English</option>
+<option value="ent">Entrepreneurship</option>
 <option value="net">Computer Network</option>
 </select>
 
 <button class="btn" onclick="startQuiz()">Start Quiz</button>
+</div>
+
+<!-- QUIZ -->
+<div class="box" id="quizBox" style="display:none;">
+<div id="studentInfo"></div>
+<div id="timer">15</div>
+
+<h3 id="question"></h3>
+
+<button class="btn" onclick="check(0)" id="o0"></button>
+<button class="btn" onclick="check(1)" id="o1"></button>
+<button class="btn" onclick="check(2)" id="o2"></button>
+<button class="btn" onclick="check(3)" id="o3"></button>
+
+<p>Prepared by call 🤙 Amos</p>
+</div>
+
+<!-- ADMIN -->
+<div class="box">
+<h2>Admin Login</h2>
+<input id="adminUser" placeholder="Username">
+<input id="adminPass" type="password" placeholder="Password">
+<button class="btn" onclick="loginAdmin()">Login</button>
+
+<div id="adminPanel" style="display:none;">
+<h3>Quiz Results</h3>
+<ul id="resultsList"></ul>
+</div>
+</div>
+
+</div>
+
+<canvas id="certCanvas" style="display:none;"></canvas>
+
+<script>
+
+/* ========== STUDENTS (83 SORTED) ========== */
+let students=[ 
+{reg:"224003892",name:"INGABIRE SIFA"},
+{reg:"225028235",name:"HARERIMANA JEAN BOSCO"},
+{reg:"225030509",name:"NTAKIRUTIMANA DIDIER"},
+{reg:"225030583",name:"MUTAYISEBYA LAETITIA"},
+{reg:"225030730",name:"CYUZUZO PATRICK"},
+{reg:"225031426",name:"KWIZERA DANIEL"},
+{reg:"225031648",name:"TWIZERIMANA FRANCOISE"},
+{reg:"225031774",name:"IYAMUHANZE FABRICE"},
+{reg:"225031797",name:"NIRINGIYUMUKIZA ERIC"},
+{reg:"225031806",name:"MANIRIHO JEAN BAPTISTE"},
+{reg:"225032187",name:"MWISENEZA NEPOMUSCENE"},
+{reg:"225032333",name:"GASHEMA PASCAL"},
+{reg:"225032506",name:"NISHIMWE SIMPLICE"},
+{reg:"225033031",name:"IRADUKUNDA THEOPISTE"},
+{reg:"225034228",name:"UWAYISABA AGNES"},
+{reg:"225034471",name:"MUKARUKUNDO PHILOMENE"},
+{reg:"225035065",name:"MUSHIMIYIMANA PATRICK"},
+{reg:"225035551",name:"NDAYISENGA PATRICK"},
+{reg:"225035571",name:"MUHIRE JANVIER"},
+{reg:"225036066",name:"TUYIRAMYE ANCILE"},
+{reg:"225036654",name:"BURINDWI THEOGENE"},
+{reg:"225037737",name:"UWIKUNDA LUCIE"},
+{reg:"225038012",name:"NIYOMUGABO EMMANUEL"},
+{reg:"225038015",name:"NIYOBUHUNGIRO AMOS"},
+{reg:"225038335",name:"IRASUBIZA VODINE"},
+{reg:"225038540",name:"NIYOMUGABO ANDRE"},
+{reg:"225039404",name:"HAKIZIMANA JEAN BONCOEUR"},
+{reg:"225039679",name:"NIYONDAMYA ERASTE"},
+{reg:"225040013",name:"BIKORIMANA DAMASCENE"},
+{reg:"225040706",name:"HABINSHUTI EZECHIEL"},
+{reg:"225041692",name:"TUYIZERE BONAVENTURE"},
+{reg:"225041968",name:"NDAGIJIMANA EUGENE"},
+{reg:"225042118",name:"ISHIMWE RODRIGUE"},
+{reg:"225042128",name:"HITIMANA EMMANUEL"},
+{reg:"225042275",name:"NIYOMUGABO ERIC"},
+{reg:"225043408",name:"TWIZERIMANA YAKINI"},
+{reg:"225044328",name:"MUJAWAMARIYA MARITHA"},
+{reg:"225045066",name:"NIWEMAHORO PROVIDENCE"},
+{reg:"225052472",name:"BIMENYIMANA BENJAMIN"},
+{reg:"225055615",name:"MUGISHA OBED"},
+{reg:"225056155",name:"MUNGUYIKO MILLIERE"},
+{reg:"225057744",name:"NGIRINSHUTI JOYCE"},
+{reg:"225058399",name:"NIYITEGEKA ADELINE"},
+{reg:"225058627",name:"MUHOZI JULIA"},
+{reg:"225058665",name:"NIYONSENGA REGIS"},
+{reg:"225058711",name:"UMUHIRE VALENTINE"},
+{reg:"225059294",name:"NKURUNZIZA JEAN CLAUDE"},
+{reg:"225060571",name:"MUNYABUGINGO PACIFIQUE"},
+{reg:"225060679",name:"INGABIRE SOLANGE"},
+{reg:"225060937",name:"NGENERWANAYEZU ONESME"},
+{reg:"225061542",name:"NIYIBIKORA CLARISSE"},
+{reg:"225061793",name:"NIYOMUKIZA SYLVIE"},
+{reg:"225062589",name:"UWASE JOSIANE"},
+{reg:"225063125",name:"NDAYIZEYE SAMUEL"},
+{reg:"225063339",name:"NGIRUMUKIZA ERIC"},
+{reg:"225063683",name:"IGABE BONHEUR"},
+{reg:"225064960",name:"YUMVAGUSENGA ESTHER"},
+{reg:"225065485",name:"NIYIGABA EVODE"},
+{reg:"225065795",name:"UWIRAGIYE CONSOLEE"},
+{reg:"225065977",name:"NDUWAMUNGU ELIE"},
+{reg:"225066185",name:"NDIKURYAYO BERNARD"},
+{reg:"225067188",name:"NDAGIJIMANA DONAT"},
+{reg:"225067467",name:"NSHIMYIMANA EMMANUEL"},
+{reg:"225067685",name:"TUYIZERE ERIC"},
+{reg:"225068322",name:"HATUNGURAMYE MATHIAS"},
+{reg:"225068548",name:"BAVUGANSENGA ISRAEL"},
+{reg:"225068703",name:"NIYODUSENGA ELIZABETH"},
+{reg:"225069468",name:"NIKUZWE VANICE"},
+{reg:"225069802",name:"NIKUZE AGNES"},
+{reg:"225070476",name:"DUSABIMANA JEAN CLAUDE"},
+{reg:"225070658",name:"NIYONSHUTI THEONESTE"},
+{reg:"225072552",name:"NDABIKUNZE ALLI"},
+{reg:"225073831",name:"NIYONKURU VINCENT"},
+{reg:"225074342",name:"NIYONSABA EMELINE"},
+{reg:"225077235",name:"MUYIZERE DENYSE"},
+{reg:"225078533",name:"IRADUKUNDA RACHEL"},
+{reg:"225079342",name:"IHIRWE DINA"},
+{reg:"225080808",name:"IMANANIYIGENA BRIGITTE"},
+{reg:"225081654",name:"HATEGEKIMANA GAD"},
+{reg:"225081930",name:"KWIZERA DIVINE"},
+{reg:"225081998",name:"UTUJE ALICE"},
+{reg:"225083302",name:"MANIRAKIZA GERMAIN"},
+{reg:"225083757",name:"NIYIGENA PATRICK"}
+];
+
+/* ========== QUIZ DATA ========== */
+const data={
+db:[
+{q:"DBMS function?",o:["Manage data","Play game","Edit video","Browse"],a:0},
+{q:"SQL full form?",o:["Structured Query Language","Simple Query List","System Query","None"],a:0},
+{q:"Primary key?",o:["Unique ID","Delete","Sort","Encrypt"],a:0},
+{q:"Normalization?",o:["Reduce redundancy","Increase size","Delete DB","Copy data"],a:0},
+{q:"Foreign key?",o:["Link tables","Delete DB","Print","Sound"],a:0},
+{q:"SELECT?",o:["Retrieve data","Delete OS","Install app","Scan"],a:0},
+{q:"Record?",o:["Row","Column","DB","Server"],a:0},
+{q:"Index?",o:["Faster search","Slow system","Virus","File"],a:0},
+{q:"Table?",o:["Data set","Device","App","Network"],a:0},
+{q:"ACID?",o:["Transaction rules","Hardware","Browser","Game"],a:0}
+],
+
+phy:[
+{q:"Force?",o:["Push/pull","Light","Sound","Heat"],a:0},
+{q:"Speed?",o:["Distance/time","Mass","Energy","Power"],a:0},
+{q:"Newton 1st law?",o:["Inertia","Gravity","Work","Energy"],a:0},
+{q:"Work?",o:["Force×distance","Mass×speed","Energy×time","Power×area"],a:0},
+{q:"Energy?",o:["Ability to work","Matter","Light only","Force only"],a:0},
+{q:"Gravity?",o:["Attraction force","Heat","Sound","Light"],a:0},
+{q:"Acceleration?",o:["Velocity change","Mass","Time","Force only"],a:0},
+{q:"Momentum?",o:["mv","f×t","d×t","e×m"],a:0},
+{q:"Volt unit?",o:["Volt","Newton","Joule","Watt"],a:0},
+{q:"Current?",o:["Charge flow","Water","Air","Heat"],a:0}
+],
+
+eng:[
+{q:"Verb?",o:["Action word","Name","Place","Thing"],a:0},
+{q:"Go past?",o:["Went","Gone","Going","Go"],a:0},
+{q:"Article?",o:["a/an/the","he/she","run","blue"],a:0},
+{q:"Adjective?",o:["Describes noun","Action","Place","Verb"],a:0},
+{q:"Pronoun?",o:["He","Run","Table","Blue"],a:0},
+{q:"Tense?",o:["Time","Place","Thing","Color"],a:0},
+{q:"Passive?",o:["Object receives","Subject acts","Question","None"],a:0},
+{q:"Synonym?",o:["Same meaning","Opposite","Sound","Verb"],a:0},
+{q:"Antonym?",o:["Opposite","Same","Verb","Noun"],a:0},
+{q:"Sentence?",o:["Complete idea","Word","Letter","Sound"],a:0}
+],
+
+ent:[
+{q:"Entrepreneur?",o:["Business creator","Student","Teacher","Doctor"],a:0},
+{q:"Innovation?",o:["New ideas","Copy","Delete","Stop"],a:0},
+{q:"Risk?",o:["Uncertainty","Guarantee","Profit","Salary"],a:0},
+{q:"Market?",o:["Buy/sell","School","Office","Hospital"],a:0},
+{q:"Profit?",o:["Revenue-cost","Cost-revenue","Tax","Loss"],a:0},
+{q:"Capital?",o:["Start resources","Debt","Loss","Tax"],a:0},
+{q:"Marketing?",o:["Promotion","Hiding","Destroy","Sleep"],a:0},
+{q:"Customer?",o:["Buyer","Seller","Teacher","Doctor"],a:0},
+{q:"Economy?",o:["System production","Game","App","Code"],a:0},
+{q:"Business plan?",o:["Roadmap","Game","Device","Music"],a:0}
+],
+
+net:[
+{q:"LAN?",o:["Local Network","Large Area","Long Access","Link Node"],a:0},
+{q:"Router?",o:["Direct traffic","Print","Scan","Play"],a:0},
+{q:"IP?",o:["Device ID","Password","Cable","Screen"],a:0},
+{q:"OSI?",o:["7 layers","2","3","5"],a:0},
+{q:"Switch?",o:["Data link","Physical","App","Transport"],a:0},
+{q:"Packet?",o:["Data unit","Virus","App","File"],a:0},
+{q:"Bandwidth?",o:["Capacity","Speed car","Memory","CPU"],a:0},
+{q:"WAN?",o:["Wide network","Small","Local","None"],a:0},
+{q:"Protocol?",o:["Rules","Device","Game","App"],a:0},
+{q:"TCP/IP?",o:["Protocol suite","Game","CPU","OS"],a:0}
+]
+};
+
+let quiz=[],i=0,score=0,time=15,timer,selectedStudent,selectedSubject;
+
+/* ========== STUDENT LOAD ========== */
+students.sort((a,b)=>a.name.localeCompare(b.name));
+
+let select=document.getElementById("studentSelect");
+
+function loadStudents(){
+select.innerHTML="";
+students.forEach(s=>{
+let opt=document.createElement("option");
+opt.value=s.reg;
+opt.text=s.name;
+select.add(opt);
+});
+}
+loadStudents();
+
+function filterStudents(){
+let v=document.getElementById("search").value.toLowerCase();
+select.innerHTML="";
+students.filter(s=>s.name.toLowerCase().includes(v))
+.forEach(s=>{
+let opt=document.createElement("option");
+opt.value=s.reg;
+opt.text=s.name;
+select.add(opt);
+});
+}
+
+select.onchange=function(){
+let s=students.find(x=>x.reg==this.value);
+document.getElementById("regDisplay").innerText="Reg: "+s.reg;
+selectedStudent=s;
+};
+
+/* ========== COMBO VALIDATION ========== */
+function validateCombo(){
+let c=document.getElementById("combo").value.trim().toUpperCase();
+while(c!=="CSE"){
+c=prompt("Invalid combination! Enter CSE only:");
+if(!c) c="";
+c=c.toUpperCase();
+}
+return c;
+}
+
+/* ========== START QUIZ ========== */
+function startQuiz(){
+let reg=select.value;
+selectedSubject=document.getElementById("subject").value;
+
+if(!reg||!selectedSubject){
+alert("Select student and subject");
+return;
+}
+
+let combo=validateCombo();
+
+quiz=data[selectedSubject];
+i=0;score=0;
+
+document.getElementById("studentBox").style.display="none";
+document.getElementById("quizBox").style.display="block";
+
+let s=students.find(x=>x.reg==reg);
+
+document.getElementById("studentInfo").innerHTML=
+`${s.name}<br>${s.reg}<br>Subject: ${selectedSubject}<br>Combination: ${combo}`;
+
+load();
+}
+
+/* ========== QUIZ ENGINE ========== */
+function load(){
+clearInterval(timer);
+let q=quiz[i];
+
+document.getElementById("question").innerText=q.q;
+
+let options=[...q.o];
+let correct=options[q.a];
+options.sort(()=>Math.random()-0.5);
+q.a=options.indexOf(correct);
+
+for(let j=0;j<4;j++){
+document.getElementById("o"+j).innerText=options[j];
+}
+
+startTimer();
+}
+
+function startTimer(){
+time=15;
+document.getElementById("timer").innerText=time;
+timer=setInterval(()=>{
+time--;
+document.getElementById("timer").innerText=time;
+if(time<=0){clearInterval(timer);i++;next();}
+},1000);
+}
+
+function check(ans){
+clearInterval(timer);
+if(ans===quiz[i].a)score++;
+i++;
+next();
+}
+
+/* ========== RESULT + MESSAGE ========== */
+function next(){
+if(i<quiz.length){
+load();
+}else{
+
+let message="";
+if(score>=5){
+message="🎉 Congratulations! You passed 🎉";
+}else{
+message="❌ Fail try again ncuti yange";
+}
+
+/* save result */
+let result={
+name:selectedStudent.name,
+reg:selectedStudent.reg,
+subject:selectedSubject,
+score:score,
+total:quiz.length
+};
+
+let all=JSON.parse(localStorage.getItem("results")||"[]");
+all.push(result);
+localStorage.setItem("results",JSON.stringify(all));
+
+document.getElementById("quizBox").innerHTML=
+`<h2>Quiz Finished</h2>
+<p>Score: ${score}/${quiz.length}</p>
+<h3>${message}</h3>
+<button class="btn" onclick="generateCertificate()">Download Certificate</button>`;
+}
+}
+
+/* ========== CERTIFICATE ========== */
+function generateCertificate(){
+let canvas=document.getElementById("certCanvas");
+let ctx=canvas.getContext("2d");
+
+canvas.width=800;
+canvas.height=500;
+
+ctx.fillStyle="white";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+ctx.fillStyle="black";
+ctx.font="20px Arial";
+
+ctx.fillText("CERTIFICATE OF COMPLETION",200,80);
+ctx.fillText("Name: "+selectedStudent.name,100,150);
+ctx.fillText("Reg: "+selectedStudent.reg,100,190);
+ctx.fillText("Subject: "+selectedSubject,100,230);
+ctx.fillText("Score: "+score+"/"+quiz.length,100,270);
+ctx.fillText("Certified by Call 🤙 Amos",100,330);
+
+let link=document.createElement("a");
+link.download="certificate.png";
+link.href=canvas.toDataURL();
+link.click();
+}
+
+/* ========== ADMIN LOGIN ========== */
+function loginAdmin(){
+let u=document.getElementById("adminUser").value;
+let p=document.getElementById("adminPass").value;
+
+if(u==="niyobuhungiroamos034@gmail.com" && p==="24374"){
+document.getElementById("adminPanel").style.display="block";
+loadResults();
+}else{
+alert("Wrong login");
+}
+}
+
+function loadResults(){
+let list=document.getElementById("resultsList");
+list.innerHTML="";
+let results=JSON.parse(localStorage.getItem("results")||"[]");
+
+results.forEach(r=>{
+let li=document.createElement("li");
+li.innerText=`${r.name} (${r.reg}) - ${r.subject} = ${r.score}/${r.total}`;
+list.appendChild(li);
+});
+}
+
+</script>
+
+</body>
+</html><button class="btn" onclick="startQuiz()">Start Quiz</button>
 </div>
 
 <!-- QUIZ -->
