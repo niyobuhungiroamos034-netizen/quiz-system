@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>CSE Quiz System</title>
+<title>University Quiz System</title>
 
 <style>
 body{
@@ -11,6 +11,7 @@ font-family:Arial;
 background:linear-gradient(-45deg,#1e3c72,#2a5298,#00c6ff,#0072ff);
 background-size:400% 400%;
 animation:bg 10s infinite;
+text-align:center;
 }
 
 @keyframes bg{
@@ -19,34 +20,24 @@ animation:bg 10s infinite;
 100%{background-position:0%}
 }
 
-.container{
+.quiz-container{
+background:rgba(255,255,255,0.96);
 width:100%;
-min-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-flex-direction:column;
-}
-
-.box{
-background:white;
-width:90%;
-max-width:600px;
+height:100vh;
 padding:20px;
-border-radius:15px;
-margin:10px;
+box-sizing:border-box;
 }
 
 input,select{
-width:95%;
+width:90%;
 padding:10px;
-margin:5px 0;
+margin:6px;
 }
 
 .btn{
-width:100%;
+width:90%;
 padding:12px;
-margin:5px 0;
+margin:8px;
 background:#0072ff;
 color:white;
 border:none;
@@ -54,13 +45,296 @@ border-radius:8px;
 cursor:pointer;
 }
 
-.btn:hover{background:#005ecb;}
+#timer{color:red;font-size:18px;font-weight:bold;}
 
-#timer{color:red;font-weight:bold;font-size:18px;}
+small{display:block;margin-top:10px;}
 </style>
 </head>
 
 <body>
+
+<div class="quiz-container">
+
+<div id="register">
+<h2>Select your name please</h2>
+
+<select id="studentSelect" size="8"></select>
+<p id="regShow"></p>
+
+<input id="combo" placeholder="Enter Combination (CSE only)">
+
+<p>Select Subject</p>
+<select id="subject">
+<option value="">Select subject</option>
+<option value="db">Database</option>
+<option value="phy">Physics</option>
+<option value="eng">English</option>
+<option value="ent">Entrepreneurship</option>
+<option value="net">Computer Network</option>
+</select>
+
+<button class="btn" onclick="startQuiz()">Start Quiz</button>
+</div>
+
+<div id="quizBox" style="display:none;">
+<h3 id="studentInfo"></h3>
+<div id="timer">Time: 15</div>
+
+<h2 id="question"></h2>
+
+<button class="btn" onclick="check(0)" id="o0"></button>
+<button class="btn" onclick="check(1)" id="o1"></button>
+<button class="btn" onclick="check(2)" id="o2"></button>
+<button class="btn" onclick="check(3)" id="o3"></button>
+
+<small>Prepared by call 🤙 Amos</small>
+</div>
+
+</div>
+
+<script>
+
+/* ================= STUDENTS ================= */
+let students=[
+{reg:"224003892",name:"INGABIRE SIFA"},
+{reg:"225028235",name:"HARERIMANA JEAN BOSCO"},
+{reg:"225030509",name:"NTAKIRUTIMANA DIDIER"},
+{reg:"225030583",name:"MUTAYISEBYA LAETITIA"},
+{reg:"225030730",name:"CYUZUZO PATRICK"},
+{reg:"225031426",name:"KWIZERA DANIEL"},
+{reg:"225031648",name:"TWIZERIMANA FRANCOISE"},
+{reg:"225031774",name:"IYAMUHANZE FABRICE"},
+{reg:"225031797",name:"NIRINGIYUMUKIZA ERIC"},
+{reg:"225031806",name:"MANIRIHO JEAN BAPTISTE"},
+{reg:"225032187",name:"MWISENEZA NEPOMUSCENE"},
+{reg:"225032333",name:"GASHEMA PASCAL"},
+{reg:"225032506",name:"NISHIMWE SIMPLICE"},
+{reg:"225033031",name:"IRADUKUNDA THEOPISTE"},
+{reg:"225034228",name:"UWAYISABA AGNES"},
+{reg:"225034471",name:"MUKARUKUNDO PHILOMENE"},
+{reg:"225035065",name:"MUSHIMIYIMANA PATRICK"},
+{reg:"225035551",name:"NDAYISENGA PATRICK"},
+{reg:"225035571",name:"MUHIRE JANVIER"},
+{reg:"225036066",name:"TUYIRAMYE ANCILE"},
+{reg:"225037737",name:"UWIKUNDA LUCIE"},
+{reg:"225038012",name:"NIYOMUGABO EMMANUEL"},
+{reg:"225038015",name:"NIYOBUHUNGIRO AMOS"},
+{reg:"225038335",name:"IRASUBIZA VODINE"},
+{reg:"225038540",name:"NIYOMUGABO ANDRE"},
+{reg:"225039404",name:"HAKIZIMANA JEAN BONCOEUR"},
+{reg:"225039679",name:"NIYONDAMYA ERASTE"},
+{reg:"225040013",name:"BIKORIMANA DAMASCENE"},
+{reg:"225040706",name:"HABINSHUTI EZECHIEL"},
+{reg:"225041692",name:"TUYIZERE BONAVENTURE"},
+{reg:"225041968",name:"NDAGIJIMANA EUGENE"},
+{reg:"225042118",name:"ISHIMWE RODRIGUE"},
+{reg:"225042128",name:"HITIMANA EMMANUEL"},
+{reg:"225042275",name:"NIYOMUGABO ERIC"},
+{reg:"225043408",name:"TWIZERIMANA YAKINI"},
+{reg:"225044328",name:"MUJAWAMARIYA MARITHA"},
+{reg:"225045066",name:"NIWEMAHORO PROVIDENCE"},
+{reg:"225052472",name:"BIMENYIMANA BENJAMIN"},
+{reg:"225055615",name:"MUGISHA OBED"},
+{reg:"225056155",name:"MUNGUYIKO MILLIERE"},
+{reg:"225057744",name:"NGIRINSHUTI JOYCE"},
+{reg:"225058399",name:"NIYITEGEKA ADELINE"},
+{reg:"225058627",name:"MUHOZI JULIA"},
+{reg:"225058665",name:"NIYONSENGA REGIS"},
+{reg:"225058711",name:"UMUHIRE VALENTINE"},
+{reg:"225059294",name:"NKURUNZIZA JEAN CLAUDE"},
+{reg:"225060571",name:"MUNYABUGINGO PACIFIQUE"},
+{reg:"225060679",name:"INGABIRE SOLANGE"},
+{reg:"225060937",name:"NGENERWANAYEZU ONESME"},
+{reg:"225061542",name:"NIYIBIKORA CLARISSE"},
+{reg:"225061793",name:"NIYOMUKIZA SYLVIE"},
+{reg:"225062589",name:"UWASE JOSIANE"},
+{reg:"225063125",name:"NDAYIZEYE SAMUEL"},
+{reg:"225063339",name:"NGIRUMUKIZA ERIC"},
+{reg:"225063683",name:"IGABE BONHEUR"},
+{reg:"225064960",name:"YUMVAGUSENGA ESTHER"},
+{reg:"225065485",name:"NIYIGABA EVODE"},
+{reg:"225065795",name:"UWIRAGIYE CONSOLEE"},
+{reg:"225065977",name:"NDUWAMUNGU ELIE"},
+{reg:"225066185",name:"NDIKURYAYO BERNARD"},
+{reg:"225067188",name:"NDAGIJIMANA DONAT"},
+{reg:"225067467",name:"NSHIMYIMANA EMMANUEL"},
+{reg:"225067685",name:"TUYIZERE ERIC"},
+{reg:"225068322",name:"HATUNGURAMYE MATHIAS"},
+{reg:"225068548",name:"BAVUGANSENGA ISRAEL"},
+{reg:"225068703",name:"NIYODUSENGA ELIZABETH"},
+{reg:"225069468",name:"NIKUZWE VANICE"},
+{reg:"225069802",name:"NIKUZE AGNES"},
+{reg:"225070476",name:"DUSABIMANA JEAN CLAUDE"},
+{reg:"225070658",name:"NIYONSHUTI THEONESTE"},
+{reg:"225072552",name:"NDABIKUNZE ALLI"},
+{reg:"225073831",name:"NIYONKURU VINCENT"},
+{reg:"225074342",name:"NIYONSABA EMELINE"},
+{reg:"225077235",name:"MUYIZERE DENYSE"},
+{reg:"225078533",name:"IRADUKUNDA RACHEL"},
+{reg:"225079342",name:"IHIRWE DINA"},
+{reg:"225080808",name:"IMANANIYIGENA BRIGITTE"},
+{reg:"225081654",name:"HATEGEKIMANA GAD"},
+{reg:"225081930",name:"KWIZERA DIVINE"},
+{reg:"225081998",name:"UTUJE ALICE"},
+{reg:"225083302",name:"MANIRAKIZA GERMAIN"},
+{reg:"225083757",name:"NIYIGENA PATRICK"}
+];
+
+students.sort((a,b)=>a.name.localeCompare(b.name));
+
+/* ================= QUESTIONS (IMPROVED OPTIONS) ================= */
+const data={
+db:[
+{q:"What does DBMS do?",o:["Manage databases","Create networks","Run games","Edit videos"],a:0},
+{q:"SQL is used for?",o:["Querying databases","Design graphics","Build hardware","Send emails"],a:0},
+{q:"Primary key ensures?",o:["Unique records","Fast internet","File compression","Audio output"],a:0},
+{q:"Normalization reduces?",o:["Data redundancy","CPU usage","Screen size","Electricity"],a:0},
+{q:"Foreign key is used to?",o:["Link tables","Store images","Speed CPU","Encrypt files"],a:0},
+{q:"SELECT statement?",o:["Retrieve data","Delete OS","Install apps","Draw charts"],a:0},
+{q:"A database record is?",o:["Row in table","Full program","Network node","Software app"],a:0},
+{q:"Indexing improves?",o:["Search speed","Battery life","Sound quality","Video display"],a:0},
+{q:"Table in DB is?",o:["Structured data set","Software tool","Network cable","CPU unit"],a:0},
+{q:"ACID properties relate to?",o:["Transactions","Graphics","Hardware","Internet"],a:0}
+],
+
+phy:[
+{q:"Force is defined as?",o:["Push or pull","Energy flow","Light wave","Sound signal"],a:0},
+{q:"Speed formula is?",o:["Distance/time","Mass/volume","Force×mass","Energy/time"],a:0},
+{q:"Newton’s first law?",o:["Inertia","Gravity","Momentum","Energy conservation"],a:0},
+{q:"Work is done when?",o:["Force moves object","Light shines","Sound travels","Heat flows"],a:0},
+{q:"Energy is?",o:["Ability to do work","Matter type","Chemical symbol","Force field"],a:0},
+{q:"Gravity is?",o:["Attractive force","Electrical current","Magnetic field","Sound wave"],a:0},
+{q:"Acceleration means?",o:["Change in velocity","Constant speed","Zero force","Mass increase"],a:0},
+{q:"Momentum equals?",o:["Mass × velocity","Force × time","Energy × speed","Distance × time"],a:0},
+{q:"Voltage unit is?",o:["Volt","Newton","Watt","Joule"],a:0},
+{q:"Electric current is?",o:["Flow of charge","Flow of water","Flow of heat","Flow of light"],a:0}
+],
+
+eng:[
+{q:"A verb is?",o:["Action word","Naming word","Place word","Number word"],a:0},
+{q:"Past tense of go?",o:["Went","Going","Gone","Goes"],a:0},
+{q:"Articles are?",o:["a, an, the","he, she","run, jump","big, small"],a:0},
+{q:"Adjective describes?",o:["Noun","Verb","Adverb","Preposition"],a:0},
+{q:"Pronoun example?",o:["He","Run","Table","Blue"],a:0},
+{q:"Tense shows?",o:["Time of action","Place","Person","Thing"],a:0},
+{q:"Passive voice means?",o:["Object receives action","Subject acts","No verb","Question form"],a:0},
+{q:"Synonym means?",o:["Same meaning","Opposite meaning","Random word","Sound word"],a:0},
+{q:"Antonym means?",o:["Opposite meaning","Same meaning","Verb type","Noun type"],a:0},
+{q:"Subject-verb agreement means?",o:["Correct matching","Writing essay","Reading text","Speaking only"],a:0}
+],
+
+ent:[
+{q:"Entrepreneur is?",o:["Business creator","Employee","Student","Doctor"],a:0},
+{q:"Innovation means?",o:["New idea","Copy work","Repeat task","Delete idea"],a:0},
+{q:"Business plan is?",o:["Roadmap","Random guess","Game","Software"],a:0},
+{q:"Risk means?",o:["Uncertainty","Guarantee","Profit","Salary"],a:0},
+{q:"Market consists of?",o:["Buyers & sellers","Teachers","Doctors","Students"],a:0},
+{q:"Profit is?",o:["Revenue minus cost","Cost minus revenue","Salary only","Tax amount"],a:0},
+{q:"Capital means?",o:["Start resources","Loss","Debt","Expense"],a:0},
+{q:"Marketing is?",o:["Promoting product","Hiding product","Deleting product","Ignoring product"],a:0},
+{q:"Customer is?",o:["Buyer","Seller","Worker","Manager"],a:0},
+{q:"Economy is?",o:["Production system","Game","Computer","Language"],a:0}
+],
+
+net:[
+{q:"LAN means?",o:["Local Area Network","Large Area Network","Light Access Node","Link Application Net"],a:0},
+{q:"Router function?",o:["Direct traffic","Store files","Play audio","Edit video"],a:0},
+{q:"IP address is?",o:["Device identifier","Software tool","Hardware chip","Browser type"],a:0},
+{q:"OSI model has?",o:["7 layers","5 layers","3 layers","10 layers"],a:0},
+{q:"Switch works at?",o:["Data link layer","Application layer","Physical layer","Transport layer"],a:0},
+{q:"Packet is?",o:["Data unit","Virus","Program","Hardware"],a:0},
+{q:"Bandwidth means?",o:["Data capacity","CPU speed","Battery life","Sound level"],a:0},
+{q:"WAN means?",o:["Wide Area Network","Wireless Access Node","Web Application Net","Wide Access Node"],a:0},
+{q:"Protocol is?",o:["Rules of communication","Computer hardware","Screen type","Software game"],a:0},
+{q:"TCP/IP is?",o:["Network protocol suite","Graphic tool","Operating system","Browser engine"],a:0}
+]
+};
+
+/* SAME LOGIC (UNCHANGED CORE) */
+
+let quiz=[],i=0,score=0,time=15,timer;
+
+function startQuiz(){
+let reg=select.value;
+let combo=document.getElementById("combo").value.trim().toUpperCase();
+
+if(combo!=="CSE"){
+alert("Enter valid CSE combination");
+return;
+}
+
+let subject=document.getElementById("subject").value;
+if(!reg||!subject){
+alert("Fill all fields");
+return;
+}
+
+quiz=data[subject];
+let s=students.find(x=>x.reg==reg);
+
+document.getElementById("register").style.display="none";
+document.getElementById("quizBox").style.display="block";
+
+document.getElementById("studentInfo").innerHTML=
+`Name: ${s.name}<br>Reg: ${s.reg}<br>Combo: ${combo}`;
+
+load();
+}
+
+function startTimer(){
+time=15;
+document.getElementById("timer").innerText="Time: "+time;
+
+timer=setInterval(()=>{
+time--;
+document.getElementById("timer").innerText="Time: "+time;
+if(time==0){clearInterval(timer);i++;next();}
+},1000);
+}
+
+function load(){
+clearInterval(timer);
+let q=quiz[i];
+document.getElementById("question").innerText=q.q;
+
+let arr=[0,1,2,3];
+arr.sort(()=>Math.random()-0.5);
+
+for(let j=0;j<4;j++){
+document.getElementById("o"+j).innerText=q.o[arr[j]];
+document.getElementById("o"+j).setAttribute("data",arr[j]);
+}
+
+startTimer();
+}
+
+function check(btn){
+clearInterval(timer);
+let selected=document.getElementById("o"+btn).getAttribute("data");
+if(Number(selected)===quiz[i].a) score++;
+i++;
+next();
+}
+
+function next(){
+if(i<quiz.length){
+load();
+}else{
+
+let msg = score>=5
+?"🎉 Congratulations! You passed 🎉"
+:"❌ Fail try again ncuti yange";
+
+document.getElementById("quizBox").innerHTML=
+`<h2>Quiz Finished</h2>
+<p>Score: ${score}/${quiz.length}</p>
+<h3>${msg}</h3>`;
+}
+}
+</script>
+
+</body>
+</html><body>
 
 <div class="container">
 
